@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Écrivo — Écris ton prochain livre KDP, sans abonnement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1115;
+    --ink-2: #171a21;
+    --ink-3: #1e222b;
+    --rule: #2a2f3a;
+    --paper: #f2ede3;
+    --paper-dim: #c9cbd1;
+    --slate: #9aa0ac;
+    --brass: #c9a869;
+    --brass-bright: #d9bd83;
+    --seal: #8a3a34;
+    --seal-bright: #a8463f;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--paper);
+    line-height: 1.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  h1, h2, h3, .display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.08;
+    margin: 0;
+  }
+
+  a { color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--brass-bright);
+    outline-offset: 3px;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ---------- Spine: the running structural device ---------- */
+  .spine {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 64px;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--rule) 8%, var(--rule) 92%, transparent);
+    z-index: 1;
+    display: none;
+  }
+  @media (min-width: 1000px) { .spine { display: block; } }
+
+  /* ---------- Header ---------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(15,17,21,0.86);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .wordmark {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--paper);
+  }
+  .wordmark em { color: var(--brass-bright); font-style: normal; }
+  .cta-small {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--brass-bright);
+    padding: 10px 20px;
+    border-radius: 3px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .cta-small:hover { background: var(--paper); }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 88px 0 64px;
+    position: relative;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 64px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+  }
+  .kicker {
+    font-size: 15px;
+    color: var(--brass-bright);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    margin: 0 0 18px 0;
+  }
+  .hero h1 {
+    font-size: clamp(38px, 5vw, 58px);
+    max-width: 15ch;
+  }
+  .hero p.lede {
+    font-size: 19px;
+    color: var(--paper-dim);
+    max-width: 46ch;
+    margin: 26px 0 34px;
+  }
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .cta-primary {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--brass-bright);
+    padding: 15px 30px;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .cta-primary:hover { background: var(--paper); transform: translateY(-1px); }
+  .hero-note {
+    font-size: 14px;
+    color: var(--slate);
+  }
+  .hero-note strong { color: var(--paper); }
+
+  /* Stacked cover art */
+  .cover-stack {
+    position: relative;
+    height: 400px;
+  }
+  .cover-stack svg {
+    position: absolute;
+    width: 190px;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+  }
+  .cover-a { left: 10%; top: 0; transform: rotate(-7deg); z-index: 1; }
+  .cover-b { left: 38%; top: 40px; transform: rotate(3deg); z-index: 2; }
+  .cover-c { left: 20%; top: 90px; transform: rotate(-2deg); z-index: 3; }
+
+  /* ---------- Section shell ---------- */
+  section { padding: 96px 0; border-top: 1px solid var(--rule); }
+  .section-head { max-width: 62ch; margin-bottom: 56px; }
+  .section-head .kicker { margin-bottom: 14px; }
+  .section-head h2 { font-size: clamp(28px, 3.4vw, 38px); }
+  .section-head p { color: var(--paper-dim); font-size: 17px; margin-top: 16px; }
+
+  /* ---------- Table of contents (how it works) ---------- */
+  .toc {
+    counter-reset: chapter;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  @media (max-width: 900px) { .toc { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .toc { grid-template-columns: 1fr; } }
+  .toc-item {
+    counter-increment: chapter;
+    background: var(--ink);
+    padding: 32px 26px;
+  }
+  .toc-item::before {
+    content: "Chapitre " counter(chapter, decimal-leading-zero);
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--brass-bright);
+    margin-bottom: 16px;
+  }
+  .toc-item h3 { font-size: 20px; margin-bottom: 10px; }
+  .toc-item p { color: var(--slate); font-size: 14.5px; margin: 0; }
+
+  /* ---------- Feature rows (editorial, alternating) ---------- */
+  .feature-row {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 56px;
+    align-items: center;
+    padding: 52px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .feature-row:last-child { border-bottom: none; }
+  .feature-row:nth-child(even) { grid-template-columns: 1.1fr 0.9fr; }
+  .feature-row:nth-child(even) .feature-visual { order: 2; }
+  @media (max-width: 860px) {
+    .feature-row, .feature-row:nth-child(even) { grid-template-columns: 1fr; }
+    .feature-row:nth-child(even) .feature-visual { order: 0; }
+  }
+  .feature-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--brass-bright);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .feature-row h3 { font-size: 26px; margin-bottom: 14px; max-width: 20ch; }
+  .feature-row p { color: var(--paper-dim); font-size: 16px; max-width: 46ch; }
+  .feature-visual {
+    background: var(--ink-2);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 28px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* mini mock elements inside feature visuals */
+  .mock-line { height: 8px; background: var(--rule); border-radius: 2px; margin-bottom: 10px; }
+  .mock-card {
+    background: var(--ink-3);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 16px 18px;
+    width: 100%;
+  }
+  .badge-mock {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #1f3a24;
+    color: #9fd39a;
+    margin-top: 8px;
+  }
+
+  /* ---------- Pricing ---------- */
+  .price-block {
+    background: var(--ink-2);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 56px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 48px;
+    align-items: center;
+  }
+  @media (max-width: 800px) {
+    .price-block { grid-template-columns: 1fr; padding: 40px 28px; }
+  }
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--seal-bright);
+    border: 1px solid var(--seal);
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 22px;
+    transform: rotate(-1.5deg);
+  }
+  .price-amount {
+    font-family: 'Fraunces', serif;
+    font-size: 64px;
+    color: var(--paper);
+    line-height: 1;
+  }
+  .price-amount sup { font-size: 26px; top: -30px; }
+  .price-was {
+    color: var(--slate);
+    font-size: 16px;
+    margin-top: 10px;
+  }
+  .price-was s { color: var(--slate); }
+  .price-list {
+    list-style: none;
+    padding: 0;
+    margin: 28px 0 0;
+    color: var(--paper-dim);
+    font-size: 15px;
+  }
+  .price-list li { padding: 7px 0; border-bottom: 1px dashed var(--rule); }
+  .price-list li:last-child { border-bottom: none; }
+  .price-cta-col { text-align: center; }
+  .price-cta-col .cta-primary { width: 100%; text-align: center; padding: 18px 34px; font-size: 17px; }
+  .price-cta-col .fine { font-size: 13px; color: var(--slate); margin-top: 14px; max-width: 22ch; margin-left: auto; margin-right: auto; }
+
+  /* ---------- FAQ ---------- */
+  .faq-item { border-bottom: 1px solid var(--rule); }
+  .faq-item:first-child { border-top: 1px solid var(--rule); }
+  .faq-q {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--paper);
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    padding: 24px 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+  .faq-q .mark {
+    font-family: 'Inter', sans-serif;
+    color: var(--brass-bright);
+    font-size: 22px;
+    font-weight: 300;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+  .faq-item[data-open="true"] .mark { transform: rotate(45deg); }
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+  .faq-a p {
+    color: var(--paper-dim);
+    font-size: 15.5px;
+    padding: 0 4px 26px;
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 48px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--slate);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="spine" aria-hidden="true"></div>
+
+<header>
+  <div class="header-row">
+    <div class="wordmark">Écriv<em>o</em></div>
+    <a class="cta-small" href="https://ecrivo.vercel.app">Créer mon compte</a>
+  </div>
+</header>
+
+<section class="hero" style="border-top:none; padding-top: 88px;">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">Pour les auteurs indépendants Amazon KDP</p>
+      <h1>Écris, mets en page et publie ton livre — sans jamais rouvrir la page blanche.</h1>
+      <p class="lede">
+        Écrivo transforme une idée en manuscrit complet : concept, plan de chapitres, rédaction,
+        couverture et fiche produit. Un seul paiement, aucun abonnement, aucune limite d'usage.
+      </p>
+      <div class="hero-actions">
+        <a class="cta-primary" href="https://ecrivo.vercel.app">Commencer mon premier livre</a>
+        <span class="hero-note"><strong>69&nbsp;€</strong> — accès à vie</span>
+      </div>
+    </div>
+    <div class="cover-stack" role="img" aria-label="Trois couvertures de livres générées avec Écrivo : un thriller, un carnet de discipline et un roman">
+      <svg class="cover-a" viewBox="0 0 200 300">
+        <rect width="200" height="300" fill="#12182b"/>
+        <rect x="0" y="210" width="200" height="90" fill="#0a0d16"/>
+        <rect x="60" y="60" width="10" height="14" fill="#1f2740"/>
+        <rect x="90" y="60" width="10" height="14" fill="#1f2740"/>
+        <rect x="120" y="60" width="10" height="14" fill="#c9a869"/>
+        <rect x="60" y="90" width="10" height="14" fill="#1f2740"/>
+        <rect x="90" y="120" width="10" height="14" fill="#1f2740"/>
+        <text x="100" y="245" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="19" fill="#f2ede3">L'Appartement</text>
+        <text x="100" y="268" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="19" fill="#f2ede3">d'Avant</text>
+      </svg>
+      <svg class="cover-b" viewBox="0 0 200 300">
+        <rect width="200" height="300" fill="#1c2333"/>
+        <rect x="20" y="20" width="160" height="260" fill="none" stroke="#c9a869" stroke-width="1.5"/>
+        <text x="100" y="140" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="16" fill="#c9a869">90 jours de</text>
+        <text x="100" y="168" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="24" fill="#f2ede3">discipline</text>
+      </svg>
+      <svg class="cover-c" viewBox="0 0 200 300">
+        <rect width="200" height="300" fill="#241a22"/>
+        <circle cx="100" cy="110" r="46" fill="#3a2530"/>
+        <text x="100" y="205" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="18" fill="#f2ede3">Trois Femmes,</text>
+        <text x="100" y="228" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="18" fill="#f2ede3">Une Nuit</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section id="comment-ca-marche">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">La méthode</p>
+      <h2>Quatre étapes, du premier mot à l'export final</h2>
+      <p>Chaque étape s'appuie sur la précédente — le style, les personnages et la continuité restent cohérents du concept jusqu'au dernier chapitre.</p>
+    </div>
+    <div class="toc">
+      <div class="toc-item">
+        <h3>Le concept</h3>
+        <p>Donne un genre et un thème. Écrivo propose plusieurs pitchs complets, prêts à sélectionner.</p>
+      </div>
+      <div class="toc-item">
+        <h3>Le plan</h3>
+        <p>Choisis ta longueur cible en pages. Le plan de chapitres s'ajuste automatiquement pour l'atteindre.</p>
+      </div>
+      <div class="toc-item">
+        <h3>La rédaction</h3>
+        <p>Chaque chapitre est rédigé en pleine longueur, avec dialogues et progression narrative — pas de résumé.</p>
+      </div>
+      <div class="toc-item">
+        <h3>La publication</h3>
+        <p>Couverture, 4e de couverture, fiche produit Amazon et export PDF/DOCX, prêts à téléverser sur KDP.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">Ce qu'on écrit avec toi</p>
+      <h2>Romans, carnets, séries — un seul outil.</h2>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <p class="feature-num">Romans &amp; nouvelles</p>
+        <h3>Des chapitres pleinement rédigés, pas des résumés gonflés</h3>
+        <p>Fixe ton nombre de pages visé : Écrivo calcule la longueur de chaque chapitre et complète automatiquement le livre jusqu'à dépasser le seuil de pages exigé par KDP pour l'impression papier.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-card">
+          <div class="mock-line" style="width:70%"></div>
+          <div class="mock-line" style="width:90%"></div>
+          <div class="mock-line" style="width:40%"></div>
+          <span class="badge-mock">≈ 91 pages estimées</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <p class="feature-num">Carnets bas-contenu</p>
+        <h3>Vraies pages imprimables, pas du texte générique</h3>
+        <p>Lignes réglées, grilles, prompts quotidiens ou suivi d'habitudes mensuel : cinq mises en page dessinées directement dans le PDF, prêtes pour l'impression.</p>
+      </div>
+      <div class="feature-visual">
+        <svg viewBox="0 0 220 150" width="100%" height="150">
+          <rect x="10" y="10" width="200" height="130" fill="#0f1115" stroke="#2a2f3a"/>
+          <line x1="30" y1="40" x2="190" y2="40" stroke="#3a4050"/>
+          <line x1="30" y1="60" x2="190" y2="60" stroke="#3a4050"/>
+          <line x1="30" y1="80" x2="190" y2="80" stroke="#3a4050"/>
+          <line x1="30" y1="100" x2="190" y2="100" stroke="#3a4050"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <p class="feature-num">Couverture &amp; 4e de couverture</p>
+        <h3>L'habillage complet, prêt pour l'éditeur de couverture KDP</h3>
+        <p>Un prompt d'illustration cohérent avec ton genre, une image de fond pour le dos, et un texte de 4e de couverture qui accroche sans spoiler la fin.</p>
+      </div>
+      <div class="feature-visual">
+        <svg viewBox="0 0 160 220" width="130">
+          <rect width="160" height="220" fill="#12182b"/>
+          <rect y="150" width="160" height="70" fill="#0a0d16"/>
+          <text x="80" y="180" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="14" fill="#f2ede3">Ton titre</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <p class="feature-num">Séries &amp; mémoire de style</p>
+        <h3>Une suite qui se souvient de tout le premier tome</h3>
+        <p>Regroupe tes livres en collection : Écrivo extrait le style d'écriture d'un tome et l'injecte dans les suivants, et prépare la suite en reprenant personnages et fils narratifs ouverts.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="mock-card">
+          <p style="margin:0 0 8px; font-size:13px; color:#9aa0ac;">Suite de <span style="color:#f2ede3">L'Appartement d'Avant</span></p>
+          <div class="mock-line" style="width:85%"></div>
+          <div class="mock-line" style="width:60%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tarif">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">Un seul prix, aucune surprise</p>
+      <h2>Pas d'abonnement à surveiller, pas de quota à compter.</h2>
+      <p>Tu utilises tes propres clés Anthropic et OpenAI : la génération reste illimitée, et le prix d'Écrivo ne bouge jamais avec ton usage.</p>
+    </div>
+
+    <div class="price-block">
+      <div>
+        <span class="stamp">Tarif de lancement</span>
+        <div class="price-amount"><sup>€</sup>69</div>
+        <p class="price-was">Passe à 89&nbsp;€ le 30 novembre 2026</p>
+        <ul class="price-list">
+          <li>Génération illimitée d'idées, plans et chapitres</li>
+          <li>Carnets bas-contenu : 5 mises en page imprimables</li>
+          <li>Couverture, 4e de couverture et fiche produit Amazon</li>
+          <li>Suites de livres avec continuité narrative</li>
+          <li>Export PDF et DOCX prêts pour KDP</li>
+          <li>Accès à vie — aucun renouvellement</li>
+        </ul>
+      </div>
+      <div class="price-cta-col">
+        <a class="cta-primary" href="https://ecrivo.vercel.app">Débloquer l'accès</a>
+        <p class="fine">Paiement sécurisé par Stripe. Sans engagement récurrent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">Questions courantes</p>
+      <h2>Avant de commencer</h2>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item" data-open="false">
+        <button class="faq-q" aria-expanded="false">
+          <span>Pourquoi dois-je fournir mes propres clés Anthropic et OpenAI ?</span>
+          <span class="mark">+</span>
+        </button>
+        <div class="faq-a">
+          <p>Parce que tu paies exactement ce que tu utilises, sans marge cachée ni quota mensuel imposé par Écrivo. La création d'une clé prend deux minutes et coûte quelques centimes par livre généré, directement auprès d'Anthropic et OpenAI.</p>
+        </div>
+      </div>
+      <div class="faq-item" data-open="false">
+        <button class="faq-q" aria-expanded="false">
+          <span>Le contenu généré respecte-t-il les règles d'Amazon KDP ?</span>
+          <span class="mark">+</span>
+        </button>
+        <div class="faq-a">
+          <p>Amazon exige de déclarer le contenu assisté par IA dans le formulaire de publication. Cette déclaration reste sous ta responsabilité au moment de la mise en vente — Écrivo t'accompagne sur la mise en page et le seuil de pages, pas sur cette démarche administrative.</p>
+        </div>
+      </div>
+      <div class="faq-item" data-open="false">
+        <button class="faq-q" aria-expanded="false">
+          <span>Que se passe-t-il après le 30 novembre 2026 ?</span>
+          <span class="mark">+</span>
+        </button>
+        <div class="faq-a">
+          <p>Le prix passe à 89&nbsp;€ pour les nouveaux comptes. Si tu as déjà payé, ton accès à vie ne change pas.</p>
+        </div>
+      </div>
+      <div class="faq-item" data-open="false">
+        <button class="faq-q" aria-expanded="false">
+          <span>Puis-je utiliser Écrivo pour des carnets et des romans à la fois ?</span>
+          <span class="mark">+</span>
+        </button>
+        <div class="faq-a">
+          <p>Oui. Chaque nouveau projet choisit son propre format, roman ou carnet bas-contenu, et suit un flux de mise en page adapté à ce format.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <span>Écrivo</span>
+    <a href="https://ecrivo.vercel.app">ecrivo.vercel.app</a>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.faq-item').forEach((item) => {
+    const btn = item.querySelector('.faq-q');
+    const answer = item.querySelector('.faq-a');
+    btn.addEventListener('click', () => {
+      const isOpen = item.getAttribute('data-open') === 'true';
+      document.querySelectorAll('.faq-item').forEach((other) => {
+        other.setAttribute('data-open', 'false');
+        other.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+        other.querySelector('.faq-a').style.maxHeight = null;
+      });
+      if (!isOpen) {
+        item.setAttribute('data-open', 'true');
+        btn.setAttribute('aria-expanded', 'true');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
